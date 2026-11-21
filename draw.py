@@ -1,78 +1,90 @@
 #!/usr/bin/env python3
-"""Produce entry.png for the make.fun bounty 'The Poster for a Place
-That Isn't There' — VELDORA, v2.
+"""Lantara (v3) — build entry.png for "The Poster for a Place That Isn't There".
 
-v1 was a flat PIL vector illustration (drawn entirely by this file) and
-scored 42.2% / rank 324 in development (4W/1D/7L, cutoff 67.7%): the
-leaders are rich, detailed, painterly posters, and flat illustration
-loses badly. v2 therefore renders the poster with an image model and
-uses PIL only to resize/optimise it to the gate's specs
-(1024x1024, at most 1,048,576 bytes). This file is the honest record
-of that build: the generation prompt below, then the conversion step.
+v3 replaces the Veldora lighthouse concept with a NEW place: LANTARA, a
+floating night market on a calm lagoon under one enormous glowing paper
+lantern. v2 (Veldora, rich painterly lighthouse) scored 56.25% / rank 158
+(3W/5D/4L, cutoff 71.3%): five draws showed the lighthouse concept sits at
+a category boundary — rank 3 LUMEN BAY and rank 4 LUMISARA are both
+lighthouse posters too, so the judge kept splitting our games. A better
+lighthouse cannot fix that; v3 leaves the category entirely.
 
-GENERATION (media.generate_image, 3 variants; variant B picked by eye):
-    Square 1:1 travel poster in a rich painterly photorealistic style,
-    every part of the frame filled with detail, no flat vector shapes,
-    no empty gradients. A dramatic dawn scene: a tall white lighthouse
-    with red bands stands large on the left on a rugged rocky cliff,
-    its golden lamp glowing; a powerful golden beam sweeps HORIZONTALLY
-    from the lamp straight across the whole image, over a textured sea
-    of clouds, toward a brilliant rising sun on the right horizon. A
-    small cliff town of stone cottages with warm lit windows clusters
-    around the lighthouse base and down the cliffside, with tiled roofs
-    and tiny chimneys with wisps of smoke. The sea of clouds fills the
-    lower half: dense rolling luminous billows in cream, gold and soft
-    pink, lit from above by the dawn, with deep violet shadows between
-    the rolls and a few distant mountain peaks poking through. Birds fly
-    through the beam. The word VELDORA is written in large elegant cream
-    serif capital letters across the upper sky, spelled exactly
-    V-E-L-D-O-R-A. Sky: deep blue-violet at the top melting to warm gold
-    and peach near the sun. The only text is VELDORA and one tiny
-    coordinates line at the bottom. No quotes, no star ratings, no
-    slogans, no other words.
+HOW THE POSTER WAS MADE
+-----------------------
+1. Three variants were generated with Muse's image model
+   (media.generate_image) from the prompt below (variant A: lantern
+   centred; B: lantern left + full moon right; C: low viewpoint, lantern
+   centred, golden reflection path). All three spelled LANTARA correctly.
+   Variant A was picked by eye: the arched name mirrors the lantern's
+   dome (type with intent), the lantern is whole and centred with its
+   full tassel (B crops the lantern at the frame edge and adds a competing
+   moon; C crowds the lantern into the name and is busier), and the boats
+   are dense but organised.
 
-The generated source is 1600x1600 RGB (~3.1 MB). The conversion below
-downscales it to 1024x1024 (LANCZOS) and quantises to an adaptive
-256-colour palette with Floyd-Steinberg dithering: the RGB PNG is
-1,451,241 bytes (over the 1,048,576 cap), the palette PNG is 454,091
-bytes and visually identical at poster size (verified by eye — the
-name, beam, town and cloud detail all survive).
+   GENERATION PROMPT (variant A, verbatim):
+   "Travel poster for an invented place called LANTARA: a floating night
+   market on a calm lagoon at night. One enormous glowing round paper
+   lantern floats high in the deep indigo starry sky, centred above the
+   market — the single landmark, warm gold, with visible ribs and a long
+   tassel. Below, dozens of small wooden boats with warm glowing lanterns
+   drift on dark glassy water, their reflections shimmering; a few boats
+   carry market stalls with striped awnings; tiny figures; low dark hills
+   on the horizon. The name LANTARA is set in large cream serif letters
+   across the upper sky, integrated into the composition. One tiny line of
+   coordinates at the very bottom. Rich painterly detail, warm gold and
+   deep indigo palette, no empty space, no quotes, no star ratings, no
+   other text. Square format."
 
-Why variant B won over A and C: its lighthouse is the largest and
-clearest landmark of the three, its beam is one clean horizontal shaft
-crossing the whole frame to the sun (A's beam splits; C's beam is
-diagonal), and its cloud sea has the most depth (mountain peaks poking
-through, layered rolls, violet shadows). All three spelled VELDORA
-correctly; B's composition leads the eye exactly as the brief wants:
-name -> lighthouse -> beam -> sun -> cloud sea.
+2. This script resizes the 1600x1600 source to exactly 1024x1024
+   (LANCZOS) and writes entry.png next to itself. It first tries an
+   optimised RGB PNG; if that exceeds the 1,048,576-byte gate it falls
+   back to an adaptive 256-colour palette PNG with Floyd-Steinberg
+   dithering (the same fallback that worked for v2 at 454,091 bytes).
+   The final file was read by eye after conversion: no visible
+   quantisation damage (name crisp, lantern glow smooth, boat detail
+   intact). Actual result for variant A: the RGB PNG exceeded the cap,
+   so entry.png is the palette-256 fallback — 1024x1024, 608,831 bytes,
+   sha256 ed3ba91fa5795f2e02c6fa8c1c9e68edcbe9939be747747f613328d2cf863a45.
 
-Usage: python3 draw.py <generated-1600x1600.png>  (writes entry.png)
+Usage:  python3 draw.py <generated-variant-A.png-or-webp> [out.png]
+Default out is entry.png next to this script. Re-running it on the same
+source reproduces entry.png byte-identically.
 """
-import os
+
+import hashlib
 import sys
+from pathlib import Path
 
 from PIL import Image
 
-TARGET = (1024, 1024)
-BYTE_CAP = 1_048_576
+CAP_BYTES = 1_048_576
+SIZE = (1024, 1024)
 
 
-def main() -> None:
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: python3 draw.py <generated-1600x1600.png>")
-    src = sys.argv[1]
-    img = Image.open(src).convert("RGB").resize(TARGET, Image.LANCZOS)
-    palette = img.quantize(
-        colors=256,
-        method=Image.Quantize.MEDIANCUT,
-        dither=Image.Dither.FLOYDSTEINBERG,
-    )
-    palette.save("entry.png", "PNG", optimize=True)
-    size = os.path.getsize("entry.png")
-    print(f"wrote entry.png: {palette.size} mode={palette.mode} {size} bytes")
-    if size > BYTE_CAP:
-        raise SystemExit(f"entry.png is {size} bytes, over the {BYTE_CAP} cap")
+def build(source: Path, out: Path) -> dict:
+    im = Image.open(source).convert("RGB").resize(SIZE, Image.LANCZOS)
+    # First try: optimised RGB PNG.
+    im.save(out, "PNG", optimize=True)
+    mode = "RGB"
+    if out.stat().st_size > CAP_BYTES:
+        # Fallback: adaptive 256-colour palette + Floyd-Steinberg dither.
+        pal = im.convert("P", palette=Image.ADAPTIVE, colors=256, dither=Image.FLOYDSTEINBERG)
+        pal.save(out, "PNG", optimize=True)
+        mode = "palette-256"
+    data = out.read_bytes()
+    return {
+        "path": str(out),
+        "mode": mode,
+        "size": Image.open(out).size,
+        "bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+    }
 
 
 if __name__ == "__main__":
-    main()
+    src = Path(sys.argv[1])
+    dst = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).with_name("entry.png")
+    info = build(src, dst)
+    print(f"wrote {info['path']}: {info['size'][0]}x{info['size'][1]}, "
+          f"{info['mode']}, {info['bytes']} bytes, sha256 {info['sha256']}")
+    assert info["bytes"] <= CAP_BYTES, "entry.png exceeds the 1 MiB gate"
