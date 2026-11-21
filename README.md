@@ -10,8 +10,23 @@ the cloud tops. The poster promises exactly that stay — first light, above
 the clouds, with nowhere to be. Its one landmark is the lighthouse, and its
 signature is the beam: instead of warning ships off rocks, it sweeps
 sideways across the cloud sea, leading the eye from the name to the
-horizon. It is drawn in flat vector style with PIL (`draw.py`) and shipped
-as `entry.png`.
+horizon.
+
+## v2 — flat illustration → rich painterly render
+
+v1 (flat PIL vector illustration) scored 42.2% / rank 324 in
+development (4W/1D/7L, rank-20 cutoff 67.7%). Studying the top 4
+leaders showed the pattern: rich, detailed, painterly rendering; a
+landmark that IS the place's identity; atmosphere you can feel; no
+empty space anywhere in the frame. (Rank 3 is itself a lighthouse
+poster — the concept was never the problem; the flat, empty execution
+was.) v2 keeps the place, the name and the sideways-beam idea and
+re-renders them richly: a large painterly lighthouse, a single clean
+horizontal beam sweeping the whole frame to the rising sun, a detailed
+cliff town with lit windows and chimney smoke, and a textured luminous
+cloud sea with mountain peaks poking through. The poster was generated
+with an image model (prompt in `draw.py`) and resized/optimised with
+PIL to 1024×1024, 454,091 bytes.
 
 ## Run it
 
