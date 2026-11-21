@@ -1,9 +1,12 @@
-// Veldora — entrypoint for "The Poster for a Place That Isn't There".
-// v2: the poster is a rich painterly render produced by draw.py (see
-// that file for the generation prompt + the PIL resize/optimise step)
-// and shipped as entry.png; this program only copies it into the
-// grader's output directory. It never draws anything itself, so the
-// graded file is byte-identical to the entry.png in this repo.
+// Lantara — entrypoint for "The Poster for a Place That Isn't There".
+// v3: a NEW place (the Veldora lighthouse concept is retired — v2's
+// five draws showed it sits at a category boundary with two other
+// lighthouse posters). The poster is a rich painterly render produced
+// by draw.py (see that file for the generation prompt + the PIL
+// resize/optimise step) and shipped as entry.png; this program only
+// copies it into the grader's output directory. It never draws
+// anything itself, so the graded file is byte-identical to the
+// entry.png in this repo.
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
